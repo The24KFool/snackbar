@@ -24,89 +24,103 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        /* Strict No-Scroll Screen Envelope */
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             background-color: var(--bg-color);
             color: var(--text-main);
-            margin: 0;
-            padding: 2rem;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             -webkit-user-select: none;
             user-select: none;
         }
 
-        .section-container {
-            max-width: 1200px;
-            margin: 0 auto 2.5rem auto;
+        /* Full Screen Split Viewport */
+        .app-viewport {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Side-by-side split for maximum vertical scale */
+            gap: 2rem;
+            height: 100vh;
+            padding: 2rem;
         }
 
+        .section-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Prevents container from overflowing screen */
+        }
+
+        /* Scaled Header for Distance */
         .section-title {
             color: var(--accent-cyan);
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 800;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
-            margin-top: 0;
-            margin-bottom: 0.75rem;
+            margin: 0 0 1rem 0;
             padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--accent-cyan);
+            border-bottom: 3px solid var(--accent-cyan);
+            flex-shrink: 0;
         }
 
-        /* 3-Column Grid Layout */
+        /* 2 Columns per Section (4 columns total across screen) */
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: max-content;
+            gap: 0.85rem;
+            align-content: start;
+            overflow: hidden;
         }
 
-        @media (max-width: 900px) {
-            .card-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 600px) {
-            .card-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Dark Card Styling */
+        /* High-Visibility Distance Cards */
         .flavor-card {
             background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
+            border: 2px solid var(--card-border);
+            border-radius: 10px;
+            padding: 0.85rem 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             min-height: 64px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             transition: opacity 0.2s ease, filter 0.2s ease;
         }
 
         .flavor-info {
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 0.2rem;
+            min-width: 0;
         }
 
+        /* Large Bold Text for Distance */
         .flavor-name {
-            font-size: 1.15rem;
+            font-size: 1.35rem;
             font-weight: 700;
             color: var(--text-main);
             line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .combo-ingredients {
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Out of Stock Modifier */
         .flavor-card.out-of-stock {
-            opacity: 0.45;
-            filter: grayscale(30%);
+            opacity: 0.4;
+            filter: grayscale(40%);
             border-color: #1e293b;
         }
 
@@ -115,42 +129,46 @@
             color: var(--text-muted);
         }
 
-        /* Minimalist Out-of-Stock Pill */
+        /* High-Contrast Pill for Distance */
         .sold-out-pill {
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             font-weight: 800;
             letter-spacing: 0.05em;
             color: var(--pill-text);
             background-color: var(--pill-bg);
             border: 1px solid var(--pill-border);
-            padding: 3px 6px;
-            border-radius: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
             white-space: nowrap;
-            margin-left: 0.5rem;
+            margin-left: 0.75rem;
             text-transform: uppercase;
+            flex-shrink: 0;
         }
 
         .loading-text {
             color: var(--text-muted);
             font-style: italic;
+            font-size: 1.1rem;
         }
     </style>
 </head>
 <body>
 
-    <!-- Single Flavors Section -->
-    <div class="section-container">
-        <h2 class="section-title">Single Flavors</h2>
-        <div id="single-flavors-grid" class="card-grid">
-            <span class="loading-text">Loading single flavors...</span>
+    <div class="app-viewport">
+        <!-- Single Flavors Section (Left Half) -->
+        <div class="section-container">
+            <h2 class="section-title">Single Flavors</h2>
+            <div id="single-flavors-grid" class="card-grid">
+                <span class="loading-text">Loading single flavors...</span>
+            </div>
         </div>
-    </div>
 
-    <!-- Flavor Combinations Section -->
-    <div class="section-container">
-        <h2 class="section-title">Flavor Combinations</h2>
-        <div id="combo-flavors-grid" class="card-grid">
-            <span class="loading-text">Loading combinations...</span>
+        <!-- Flavor Combinations Section (Right Half) -->
+        <div class="section-container">
+            <h2 class="section-title">Flavor Combinations</h2>
+            <div id="combo-flavors-grid" class="card-grid">
+                <span class="loading-text">Loading combinations...</span>
+            </div>
         </div>
     </div>
 
