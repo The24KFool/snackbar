@@ -3,170 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snowcone & Snack Menu</title>
-    <!-- Supabase JS Library -->
+    <title>Snow Cone Menu</title>
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root {
-            --bg-color: #0b132b;
-            --card-bg: #1c2541;
-            --text-main: #ffffff;
-            --accent-color: #4cc9f0;
-            --accent-yellow: #f72585;
+            --primary: #0284c7;
+            --bg-color: #f0f9ff;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            padding: 3vw;
-            height: 100vh;
-            overflow: hidden;
+            margin: 0;
+            padding: 2rem;
         }
 
-        header {
+        .header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
-        h1 {
-            font-size: 4vw;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--accent-color);
-            text-shadow: 0 0 15px rgba(76, 201, 240, 0.4);
+        .header h1 {
+            font-size: 2.75rem;
+            color: var(--primary);
+            margin: 0 0 0.5rem 0;
         }
 
-        .category-title {
-            font-size: 2vw;
-            color: var(--accent-yellow);
-            margin: 1.5rem 0 0.8rem 0;
-            text-transform: uppercase;
-            border-bottom: 2px solid var(--accent-yellow);
-            padding-bottom: 0.3rem;
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            margin: 0;
         }
 
-        .menu-grid {
+        .menu-section {
+            max-width: 1100px;
+            margin: 0 auto 3rem auto;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(28vw, 1fr));
-            gap: 1.5vw;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.25rem;
         }
 
-        .menu-card {
+        .card {
             background: var(--card-bg);
             border-radius: 12px;
-            padding: 1.5vw;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            padding: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            border-left: 6px solid var(--accent-color);
-            animation: fadeIn 0.4s ease-in-out;
+            justify-content: space-between;
+            transition: transform 0.2s ease;
+        }
+
+        .card.out-of-stock {
+            opacity: 0.5;
+            background-color: #fef2f2;
+            border: 1px solid #fca5a5;
         }
 
         .item-name {
-            font-size: 2.2vw;
+            font-size: 1.25rem;
             font-weight: 700;
+            margin: 0 0 0.5rem 0;
         }
 
-        .item-ingredients {
-            font-size: 1.2vw;
-            color: #a0aab2;
-            margin-top: 0.4rem;
+        .combo-ingredients {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-align: center;
+            width: fit-content;
+        }
+
+        .badge-in-stock {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-out-of-stock {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .admin-link {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .admin-link:hover {
+            background: #cbd5e1;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Shaved Ice & Refreshments</h1>
-    </header>
-
-    <div id="menu-container">
-        <!-- Rendered dynamically -->
+    <div class="header">
+        <h1>🍧 Snow Cone Menu</h1>
+        <p>Real-time flavor & combination availability</p>
     </div>
 
+    <!-- Single Flavors Section -->
+    <div class="menu-section">
+        <h2 class="section-title">Single Flavors</h2>
+        <div id="single-flavors-grid" class="grid">
+            <p>Loading single flavors...</p>
+        </div>
+    </div>
+
+    <!-- Flavor Combinations Section -->
+    <div class="menu-section">
+        <h2 class="section-title">Flavor Combinations</h2>
+        <div id="combos-grid" class="grid">
+            <p>Loading flavor combinations...</p>
+        </div>
+    </div>
+
+    <a href="admin.html" class="admin-link">Staff Login</a>
+
     <script>
-        let flavorsState = {};
-        let combosState = [];
+        async function fetchMenuData() {
+            // Fetch Single Flavors
+            const { data: flavors, error: flavorError } = await supabaseClient
+                .from('flavors')
+                .select('*')
+                .order('name', { ascending: true });
 
-        async function initDisplay() {
-            // Initial Data Fetch
-            const { data: flavors } = await supabaseClient.from('flavors').select('*');
-            const { data: combos } = await supabaseClient.from('combos').select('*');
+            if (flavorError) console.error('Error loading flavors:', flavorError);
+            else renderSingleFlavors(flavors || []);
 
-            if (flavors) {
-                flavors.forEach(f => flavorsState[f.id] = f.in_stock);
-            }
-            if (combos) {
-                combosState = combos;
-            }
+            // Fetch Flavor Combos
+            const { data: combos, error: comboError } = await supabaseClient
+                .from('flavor_combos')
+                .select('*')
+                .order('name', { ascending: true });
 
-            renderMenu();
-
-            // Realtime WebSocket Subscription
-            supabaseClient
-                .channel('realtime_menu')
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'flavors' }, payload => {
-                    flavorsState[payload.new.id] = payload.new.in_stock;
-                    renderMenu();
-                })
-                .subscribe();
+            if (comboError) console.error('Error loading combos:', comboError);
+            else renderCombos(combos || []);
         }
 
-        function renderMenu() {
-            const container = document.getElementById('menu-container');
-            container.innerHTML = '';
-
-            // Filter items: Keep item if EVERY required ingredient is in stock
-            const availableItems = combosState.filter(item => {
-                if (!item.ingredients || item.ingredients.length === 0) return true;
-                return item.ingredients.every(ingId => flavorsState[ingId] === true);
-            });
-
-            // Group by category
-            const categories = {};
-            availableItems.forEach(item => {
-                if (!categories[item.category]) categories[item.category] = [];
-                categories[item.category].push(item);
-            });
-
-            // Build HTML
-            for (const [catName, items] of Object.entries(categories)) {
-                const catTitle = document.createElement('div');
-                catTitle.className = 'category-title';
-                catTitle.innerText = catName;
-                container.appendChild(catTitle);
-
-                const grid = document.createElement('div');
-                grid.className = 'menu-grid';
-
-                items.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'menu-card';
-                    
-                    let ingText = '';
-                    if (item.ingredients && item.ingredients.length > 0) {
-                        ingText = `<div class="item-ingredients">${item.ingredients.join(' • ').replace(/_/g, ' ')}</div>`;
-                    }
-
-                    card.innerHTML = `<div class="item-name">${item.name}</div>${ingText}`;
-                    grid.appendChild(card);
-                });
-
-                container.appendChild(grid);
+        function renderSingleFlavors(flavors) {
+            const grid = document.getElementById('single-flavors-grid');
+            if (flavors.length === 0) {
+                grid.innerHTML = '<p>No single flavors available.</p>';
+                return;
             }
+
+            grid.innerHTML = flavors.map(item => `
+                <div class="card ${item.in_stock ? '' : 'out-of-stock'}">
+                    <div>
+                        <h3 class="item-name">${escapeHtml(item.name)}</h3>
+                    </div>
+                    <div>
+                        <span class="badge ${item.in_stock ? 'badge-in-stock' : 'badge-out-of-stock'}">
+                            ${item.in_stock ? 'Available' : 'Sold Out'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        window.addEventListener('DOMContentLoaded', initDisplay);
+        function renderCombos(combos) {
+            const grid = document.getElementById('combos-grid');
+            if (combos.length === 0) {
+                grid.innerHTML = '<p>No flavor combinations available.</p>';
+                return;
+            }
+
+            grid.innerHTML = combos.map(item => {
+                const ingredients = Array.isArray(item.flavors) ? item.flavors.join(' + ') : (item.ingredients || '');
+                return `
+                    <div class="card ${item.in_stock ? '' : 'out-of-stock'}">
+                        <div>
+                            <h3 class="item-name">${escapeHtml(item.name)}</h3>
+                            ${ingredients ? `<div class="combo-ingredients">${escapeHtml(ingredients)}</div>` : ''}
+                        </div>
+                        <div>
+                            <span class="badge ${item.in_stock ? 'badge-in-stock' : 'badge-out-of-stock'}">
+                                ${item.in_stock ? 'Available' : 'Sold Out'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // Initial Load
+        fetchMenuData();
+
+        // Subscribe to Realtime WebSocket Updates
+        supabaseClient
+            .channel('public-menu-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'flavors' }, () => fetchMenuData())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'flavor_combos' }, () => fetchMenuData())
+            .subscribe();
     </script>
 </body>
 </html>

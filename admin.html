@@ -4,151 +4,358 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Menu Control</title>
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #0284c7;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f4f5f7;
-            padding: 15px;
-            color: #333;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 1.25rem;
         }
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            max-width: 500px;
-            margin: 0 auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        h2 { margin-bottom: 15px; text-align: center; }
-        .flavor-row {
+
+        .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid #eee;
+            max-width: 1200px;
+            margin: 0 auto 1.5rem auto;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
         }
-        .flavor-name { font-size: 1.2rem; font-weight: 600; text-transform: capitalize; }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-logout {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stock-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .item-subtext {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        /* Toggle Switch UI */
         .switch {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 34px;
+            width: 52px;
+            height: 28px;
         }
-        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
         .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc; transition: .3s; border-radius: 34px;
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 34px;
         }
+
         .slider:before {
-            position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px;
-            background-color: white; transition: .3s; border-radius: 50%;
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
         }
-        input:checked + .slider { background-color: #2ec4b6; }
-        input:checked + .slider:before { transform: translateX(26px); }
-        #pin-overlay {
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* PIN Overlay Modal */
+        .auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85);
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 320px;
             text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
         }
-        input[type="password"] {
-            padding: 12px; font-size: 1.2rem; text-align: center; border: 1px solid #ccc; border-radius: 6px;
+
+        .auth-card h2 {
+            margin-top: 0;
+            color: var(--primary);
         }
-        button {
-            padding: 12px; font-size: 1.1rem; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer;
+
+        .pin-input {
+            width: 80%;
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+            text-align: center;
+            padding: 0.5rem;
+            margin: 1rem 0;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <!-- PIN Auth Screen -->
-        <div id="pin-overlay">
+    <!-- PIN Entry Screen -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
             <h2>Staff Access</h2>
-            <input type="password" id="pin-input" placeholder="Enter PIN Code">
-            <button onclick="checkPin()">Login</button>
+            <p>Enter PIN to manage inventory</p>
+            <input type="password" id="pin-input" class="pin-input" maxlength="6" autofocus placeholder="••••">
+            <button onclick="authenticatePin()" class="btn-submit">Enter Dashboard</button>
+        </div>
+    </div>
+
+    <!-- Admin Panel Screen -->
+    <div id="admin-dashboard" class="hidden">
+        <div class="navbar">
+            <h1>🍧 Inventory Control</h1>
+            <div class="nav-actions">
+                <a href="snowcones.html" style="text-decoration: none; color: #64748b;">Public Menu</a>
+                <button class="btn-logout" onclick="logout()">Log Out</button>
+            </div>
         </div>
 
-        <!-- Control Panel Screen -->
-        <div id="admin-panel" style="display: none;">
-            <h2>Flavor Availability</h2>
-            <div id="flavor-list">Loading flavors...</div>
+        <div class="columns">
+            <!-- Single Flavors Control -->
+            <div class="panel">
+                <h2 class="panel-title">Single Flavors</h2>
+                <div id="single-flavors-list">Loading...</div>
+            </div>
+
+            <!-- Combos Control -->
+            <div class="panel">
+                <h2 class="panel-title">Flavor Combinations</h2>
+                <div id="combos-list">Loading...</div>
+            </div>
         </div>
     </div>
 
     <script>
-        let currentPin = "";
+        let currentPin = null;
 
-        async function checkPin() {
+        function authenticatePin() {
             const input = document.getElementById('pin-input').value;
             if (!input) return;
 
-            // Attempt a test load of flavors to verify PIN authorization via RPC test call
             currentPin = input;
-            const success = await loadFlavors();
-            
-            if (success) {
-                sessionStorage.setItem('staff_pin', currentPin);
-                document.getElementById('pin-overlay').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-            } else {
-                currentPin = "";
-                alert('Incorrect PIN code');
-            }
+            sessionStorage.setItem('staff_pin', currentPin);
+
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+
+            loadAdminData();
         }
 
-        async function loadFlavors() {
-            const { data: flavors, error } = await supabaseClient
+        function logout() {
+            currentPin = null;
+            sessionStorage.removeItem('staff_pin');
+            document.getElementById('pin-input').value = '';
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('auth-overlay').classList.remove('hidden');
+        }
+
+        async function loadAdminData() {
+            // Load Single Flavors
+            const { data: flavors } = await supabaseClient
                 .from('flavors')
                 .select('*')
-                .order('name');
+                .order('name', { ascending: true });
 
-            if (error) {
-                return false;
-            }
+            renderAdminList('single-flavors-list', flavors || [], 'flavors');
 
-            const container = document.getElementById('flavor-list');
-            container.innerHTML = '';
+            // Load Flavor Combos
+            const { data: combos } = await supabaseClient
+                .from('flavor_combos')
+                .select('*')
+                .order('name', { ascending: true });
 
-            flavors.forEach(flavor => {
-                const row = document.createElement('div');
-                row.className = 'flavor-row';
-                row.innerHTML = `
-                    <span class="flavor-name">${flavor.name}</span>
-                    <label class="switch">
-                        <input type="checkbox" ${flavor.in_stock ? 'checked' : ''} onchange="toggleFlavor('${flavor.id}', this.checked, this)">
-                        <span class="slider"></span>
-                    </label>
-                `;
-                container.appendChild(row);
-            });
-            return true;
+            renderAdminList('combos-list', combos || [], 'flavor_combos');
         }
 
-        async function toggleFlavor(id, inStock, checkboxElement) {
-            // Call the secure Supabase function (RPC) passing the PIN for server-side verification
-            const { data, error } = await supabaseClient.rpc('toggle_flavor_with_pin', {
+        function renderAdminList(elementId, items, table) {
+            const container = document.getElementById(elementId);
+            if (items.length === 0) {
+                container.innerHTML = '<p style="color: #64748b;">No items found.</p>';
+                return;
+            }
+
+            container.innerHTML = items.map(item => {
+                const subtext = Array.isArray(item.flavors) ? item.flavors.join(' + ') : (item.ingredients || '');
+                return `
+                    <div class="stock-item">
+                        <div class="item-info">
+                            <span class="item-title">${escapeHtml(item.name)}</span>
+                            ${subtext ? `<span class="item-subtext">${escapeHtml(subtext)}</span>` : ''}
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" 
+                                ${item.in_stock ? 'checked' : ''} 
+                                onchange="toggleStock('${item.id}', this.checked, '${table}')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function toggleStock(id, newStatus, table) {
+            if (!currentPin) {
+                alert('Session expired. Please log in again.');
+                logout();
+                return;
+            }
+
+            // Call secure RPC function
+            const { error } = await supabaseClient.rpc('toggle_flavor_with_pin', {
                 flavor_id: id,
-                new_stock_status: inStock,
+                new_stock_status: newStatus,
                 input_pin: currentPin
             });
 
             if (error) {
                 alert('Security Error: ' + error.message);
-                // Revert checkbox state if unauthorized
-                checkboxElement.checked = !inStock;
+                loadAdminData(); // Revert switch UI on failure
             }
         }
 
-        // Check if PIN was previously entered in this browser session
+        function escapeHtml(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // Auto-restore session if PIN saved in sessionStorage
         const savedPin = sessionStorage.getItem('staff_pin');
         if (savedPin) {
             document.getElementById('pin-input').value = savedPin;
-            checkPin();
+            authenticatePin();
         }
+
+        // Enter key listener for PIN input
+        document.getElementById('pin-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                authenticatePin();
+            }
+        });
     </script>
 </body>
 </html>
