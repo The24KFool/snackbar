@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snowcone & Snack Menu</title>
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b132b;
+            --card-bg: #1c2541;
+            --text-main: #ffffff;
+            --accent-color: #4cc9f0;
+            --accent-yellow: #f72585;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 3vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 4vw;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-color);
+            text-shadow: 0 0 15px rgba(76, 201, 240, 0.4);
+        }
+
+        .category-title {
+            font-size: 2vw;
+            color: var(--accent-yellow);
+            margin: 1.5rem 0 0.8rem 0;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--accent-yellow);
+            padding-bottom: 0.3rem;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(28vw, 1fr));
+            gap: 1.5vw;
+        }
+
+        .menu-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5vw;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 6px solid var(--accent-color);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .item-name {
+            font-size: 2.2vw;
+            font-weight: 700;
+        }
+
+        .item-ingredients {
+            font-size: 1.2vw;
+            color: #a0aab2;
+            margin-top: 0.4rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Shaved Ice & Refreshments</h1>
+    </header>
+
+    <div id="menu-container">
+        <!-- Rendered dynamically -->
+    </div>
+
+    <script>
+        let flavorsState = {};
+        let combosState = [];
+
+        async function initDisplay() {
+            // Initial Data Fetch
+            const { data: flavors } = await supabaseClient.from('flavors').select('*');
+            const { data: combos } = await supabaseClient.from('combos').select('*');
+
+            if (flavors) {
+                flavors.forEach(f => flavorsState[f.id] = f.in_stock);
+            }
+            if (combos) {
+                combosState = combos;
+            }
+
+            renderMenu();
+
+            // Realtime WebSocket Subscription
+            supabaseClient
+                .channel('realtime_menu')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'flavors' }, payload => {
+                    flavorsState[payload.new.id] = payload.new.in_stock;
+                    renderMenu();
+                })
+                .subscribe();
+        }
+
+        function renderMenu() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+
+            // Filter items: Keep item if EVERY required ingredient is in stock
+            const availableItems = combosState.filter(item => {
+                if (!item.ingredients || item.ingredients.length === 0) return true;
+                return item.ingredients.every(ingId => flavorsState[ingId] === true);
+            });
+
+            // Group by category
+            const categories = {};
+            availableItems.forEach(item => {
+                if (!categories[item.category]) categories[item.category] = [];
+                categories[item.category].push(item);
+            });
+
+            // Build HTML
+            for (const [catName, items] of Object.entries(categories)) {
+                const catTitle = document.createElement('div');
+                catTitle.className = 'category-title';
+                catTitle.innerText = catName;
+                container.appendChild(catTitle);
+
+                const grid = document.createElement('div');
+                grid.className = 'menu-grid';
+
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'menu-card';
+                    
+                    let ingText = '';
+                    if (item.ingredients && item.ingredients.length > 0) {
+                        ingText = `<div class="item-ingredients">${item.ingredients.join(' • ').replace(/_/g, ' ')}</div>`;
+                    }
+
+                    card.innerHTML = `<div class="item-name">${item.name}</div>${ingText}`;
+                    grid.appendChild(card);
+                });
+
+                container.appendChild(grid);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initDisplay);
+    </script>
+</body>
+</html>
