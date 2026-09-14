@@ -30,7 +30,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1200px;
+            max-width: 600px;
             margin: 0 auto 1.5rem auto;
             padding-bottom: 1rem;
             border-bottom: 2px solid var(--border);
@@ -52,26 +52,14 @@
             cursor: pointer;
         }
 
-        .columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        @media (max-width: 768px) {
-            .columns {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .panel {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 1.25rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .panel-title {
@@ -95,19 +83,9 @@
             border-bottom: none;
         }
 
-        .item-info {
-            display: flex;
-            flex-direction: column;
-        }
-
         .item-title {
             font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .item-subtext {
-            font-size: 0.85rem;
-            color: #64748b;
+            font-size: 1.1rem;
         }
 
         /* Toggle Switch UI */
@@ -221,22 +199,13 @@
     <!-- Admin Panel Screen -->
     <div id="admin-dashboard" class="hidden">
         <div class="navbar">
-            <h1>🍧 Inventory Control</h1>
+            <h1>🍧 Flavor Inventory</h1>
             <button class="btn-logout" onclick="logout()">Log Out</button>
         </div>
 
-        <div class="columns">
-            <!-- Single Flavors Control -->
-            <div class="panel">
-                <h2 class="panel-title">Single Flavors</h2>
-                <div id="single-flavors-list">Loading...</div>
-            </div>
-
-            <!-- Combos Control -->
-            <div class="panel">
-                <h2 class="panel-title">Flavor Combinations</h2>
-                <div id="combos-list">Loading...</div>
-            </div>
+        <div class="panel">
+            <h2 class="panel-title">Single Flavors</h2>
+            <div id="single-flavors-list">Loading...</div>
         </div>
     </div>
 
@@ -265,47 +234,35 @@
         }
 
         async function loadAdminData() {
-            // Load Single Flavors
             const { data: flavors } = await supabaseClient
                 .from('flavors')
                 .select('*')
                 .order('name', { ascending: true });
 
-            renderAdminList('single-flavors-list', flavors || [], 'flavors');
-
-            // Load Flavor Combos
-            const { data: combos } = await supabaseClient
-                .from('flavor_combos')
-                .select('*')
-                .order('name', { ascending: true });
-
-            renderAdminList('combos-list', combos || [], 'flavor_combos');
+            renderAdminList('single-flavors-list', flavors || []);
         }
 
-        function renderAdminList(elementId, items, table) {
+        function renderAdminList(elementId, items) {
             const container = document.getElementById(elementId);
             if (items.length === 0) {
-                container.innerHTML = '<p style="color: #64748b;">No items found.</p>';
+                container.innerHTML = '<p style="color: #64748b;">No single flavors found.</p>';
                 return;
             }
 
             container.innerHTML = items.map(item => `
                 <div class="stock-item">
-                    <div class="item-info">
-                        <span class="item-title">${escapeHtml(item.name)}</span>
-                        ${item.ingredients ? `<span class="item-subtext">${escapeHtml(item.ingredients)}</span>` : ''}
-                    </div>
+                    <span class="item-title">${escapeHtml(item.name)}</span>
                     <label class="switch">
                         <input type="checkbox" 
                             ${item.in_stock ? 'checked' : ''} 
-                            onchange="toggleStock('${item.id}', this.checked, '${table}')">
+                            onchange="toggleStock('${item.id}', this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
             `).join('');
         }
 
-        async function toggleStock(id, newStatus, table) {
+        async function toggleStock(id, newStatus) {
             if (!currentPin) {
                 alert('Session expired. Please log in again.');
                 logout();

@@ -92,7 +92,7 @@
     <div class="menu-section">
         <h2 class="section-title">Single Flavors</h2>
         <div id="single-flavors-grid" class="grid">
-            <p>Loading single flavors...</p>
+            <p style="color: var(--text-muted);">Loading single flavors...</p>
         </div>
     </div>
 
@@ -100,32 +100,55 @@
     <div class="menu-section">
         <h2 class="section-title">Flavor Combinations</h2>
         <div id="combos-grid" class="grid">
-            <p>Loading flavor combinations...</p>
+            <p style="color: var(--text-muted);">Loading flavor combinations...</p>
         </div>
     </div>
 
     <script>
         async function fetchMenuData() {
             try {
-                // Fetch Single Flavors (Only show in_stock = true)
+                // 1. Fetch available single flavors
                 const { data: flavors, error: flavorError } = await supabaseClient
                     .from('flavors')
                     .select('*')
                     .eq('in_stock', true)
                     .order('name', { ascending: true });
 
-                if (flavorError) console.error('Error loading flavors:', flavorError);
-                else renderSingleFlavors(flavors || []);
+                if (flavorError) {
+                    console.error('Error loading flavors:', flavorError);
+                    return;
+                }
 
-                // Fetch Flavor Combos (Only show in_stock = true)
+                renderSingleFlavors(flavors || []);
+
+                // Build lookup Map and Set for ID normalization and stock checks
+                const flavorMap = new Map((flavors || []).map(f => [f.id.toLowerCase(), f.name]));
+                const inStockIds = new Set((flavors || []).map(f => f.id.toLowerCase()));
+
+                // 2. Fetch all flavor combos
                 const { data: combos, error: comboError } = await supabaseClient
                     .from('flavor_combos')
                     .select('*')
-                    .eq('in_stock', true)
                     .order('name', { ascending: true });
 
-                if (comboError) console.error('Error loading combos:', comboError);
-                else renderCombos(combos || []);
+                if (comboError) {
+                    console.error('Error loading combos:', comboError);
+                    return;
+                }
+
+                // 3. Dynamically filter combos where ALL ingredients are in stock
+                const availableCombos = (combos || []).filter(combo => {
+                    let ingredients = combo.ingredients;
+                    if (typeof ingredients === 'string') {
+                        try { ingredients = JSON.parse(ingredients); } catch (e) { ingredients = []; }
+                    }
+                    if (!Array.isArray(ingredients) || ingredients.length === 0) return false;
+
+                    return ingredients.every(flavorId => inStockIds.has(String(flavorId).toLowerCase()));
+                });
+
+                renderCombos(availableCombos, flavorMap);
+
             } catch (err) {
                 console.error('Fetch error:', err);
             }
@@ -145,19 +168,31 @@
             `).join('');
         }
 
-        function renderCombos(combos) {
+        function renderCombos(combos, flavorMap) {
             const grid = document.getElementById('combos-grid');
             if (combos.length === 0) {
                 grid.innerHTML = '<p style="color: var(--text-muted);">No flavor combinations currently available.</p>';
                 return;
             }
 
-            grid.innerHTML = combos.map(item => `
-                <div class="card">
-                    <h3 class="item-name">${escapeHtml(item.name)}</h3>
-                    ${item.ingredients ? `<div class="combo-ingredients">${escapeHtml(item.ingredients)}</div>` : ''}
-                </div>
-            `).join('');
+            grid.innerHTML = combos.map(item => {
+                let ingredients = item.ingredients;
+                if (typeof ingredients === 'string') {
+                    try { ingredients = JSON.parse(ingredients); } catch (e) { ingredients = []; }
+                }
+
+                // Format ingredient names nicely
+                const formattedList = Array.isArray(ingredients) 
+                    ? ingredients.map(id => flavorMap.get(String(id).toLowerCase()) || id).join(' + ')
+                    : '';
+
+                return `
+                    <div class="card">
+                        <h3 class="item-name">${escapeHtml(item.name)}</h3>
+                        ${formattedList ? `<div class="combo-ingredients">${escapeHtml(formattedList)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
         }
 
         function escapeHtml(str) {
@@ -170,7 +205,7 @@
         // Initial Load
         fetchMenuData();
 
-        // Subscribe to Realtime WebSocket Updates
+        // Subscribe to Realtime WebSocket Updates on flavors
         supabaseClient
             .channel('public-menu-changes')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'flavors' }, () => fetchMenuData())
