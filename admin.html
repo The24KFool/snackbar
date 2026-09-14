@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Menu Control</title>
+    <title>Stock Control - Admin</title>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
@@ -40,12 +40,6 @@
             margin: 0;
             font-size: 1.5rem;
             color: var(--primary);
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
         }
 
         .btn-logout {
@@ -228,10 +222,7 @@
     <div id="admin-dashboard" class="hidden">
         <div class="navbar">
             <h1>🍧 Inventory Control</h1>
-            <div class="nav-actions">
-                <a href="snowcones.html" style="text-decoration: none; color: #64748b;">Public Menu</a>
-                <button class="btn-logout" onclick="logout()">Log Out</button>
-            </div>
+            <button class="btn-logout" onclick="logout()">Log Out</button>
         </div>
 
         <div class="columns">
@@ -298,23 +289,20 @@
                 return;
             }
 
-            container.innerHTML = items.map(item => {
-                const subtext = Array.isArray(item.flavors) ? item.flavors.join(' + ') : (item.ingredients || '');
-                return `
-                    <div class="stock-item">
-                        <div class="item-info">
-                            <span class="item-title">${escapeHtml(item.name)}</span>
-                            ${subtext ? `<span class="item-subtext">${escapeHtml(subtext)}</span>` : ''}
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" 
-                                ${item.in_stock ? 'checked' : ''} 
-                                onchange="toggleStock('${item.id}', this.checked, '${table}')">
-                            <span class="slider"></span>
-                        </label>
+            container.innerHTML = items.map(item => `
+                <div class="stock-item">
+                    <div class="item-info">
+                        <span class="item-title">${escapeHtml(item.name)}</span>
+                        ${item.ingredients ? `<span class="item-subtext">${escapeHtml(item.ingredients)}</span>` : ''}
                     </div>
-                `;
-            }).join('');
+                    <label class="switch">
+                        <input type="checkbox" 
+                            ${item.in_stock ? 'checked' : ''} 
+                            onchange="toggleStock('${item.id}', this.checked, '${table}')">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            `).join('');
         }
 
         async function toggleStock(id, newStatus, table) {
@@ -324,7 +312,6 @@
                 return;
             }
 
-            // Call secure RPC function
             const { error } = await supabaseClient.rpc('toggle_flavor_with_pin', {
                 flavor_id: id,
                 new_stock_status: newStatus,
@@ -333,24 +320,23 @@
 
             if (error) {
                 alert('Security Error: ' + error.message);
-                loadAdminData(); // Revert switch UI on failure
+                loadAdminData();
             }
         }
 
         function escapeHtml(str) {
+            if (!str) return '';
             return str.replace(/[&<>'"]/g, 
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
         }
 
-        // Auto-restore session if PIN saved in sessionStorage
         const savedPin = sessionStorage.getItem('staff_pin');
         if (savedPin) {
             document.getElementById('pin-input').value = savedPin;
             authenticatePin();
         }
 
-        // Enter key listener for PIN input
         document.getElementById('pin-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 authenticatePin();

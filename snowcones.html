@@ -9,11 +9,11 @@
     <script src="config.js"></script>
     <style>
         :root {
-            --primary: #0284c7;
-            --bg-color: #f0f9ff;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
         }
 
         body {
@@ -30,33 +30,31 @@
         }
 
         .header h1 {
-            font-size: 2.75rem;
-            color: var(--primary);
+            font-size: 3rem;
+            color: var(--accent);
             margin: 0 0 0.5rem 0;
-        }
-
-        .header p {
-            color: var(--text-muted);
-            font-size: 1.25rem;
-            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .menu-section {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto 3rem auto;
         }
 
         .section-title {
             font-size: 1.75rem;
-            border-bottom: 3px solid var(--primary);
+            border-bottom: 2px solid var(--accent);
             padding-bottom: 0.5rem;
             margin-bottom: 1.5rem;
-            color: var(--primary);
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 1.25rem;
         }
 
@@ -64,73 +62,30 @@
             background: var(--card-bg);
             border-radius: 12px;
             padding: 1.25rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #334155;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.2s ease;
-        }
-
-        .card.out-of-stock {
-            opacity: 0.5;
-            background-color: #fef2f2;
-            border: 1px solid #fca5a5;
+            justify-content: center;
         }
 
         .item-name {
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             font-weight: 700;
-            margin: 0 0 0.5rem 0;
+            margin: 0;
+            color: #ffffff;
         }
 
         .combo-ingredients {
             font-size: 0.95rem;
             color: var(--text-muted);
-            margin-bottom: 1rem;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.6rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-align: center;
-            width: fit-content;
-        }
-
-        .badge-in-stock {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .badge-out-of-stock {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-
-        .admin-link {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            background: #e2e8f0;
-            color: #475569;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 0.875rem;
-        }
-
-        .admin-link:hover {
-            background: #cbd5e1;
+            margin-top: 0.5rem;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>🍧 Snow Cone Menu</h1>
-        <p>Real-time flavor & combination availability</p>
+        <h1>🍧 Shaved Ice Menu</h1>
     </div>
 
     <!-- Single Flavors Section -->
@@ -149,46 +104,43 @@
         </div>
     </div>
 
-    <a href="admin.html" class="admin-link">Staff Login</a>
-
     <script>
         async function fetchMenuData() {
-            // Fetch Single Flavors
-            const { data: flavors, error: flavorError } = await supabaseClient
-                .from('flavors')
-                .select('*')
-                .order('name', { ascending: true });
+            try {
+                // Fetch Single Flavors (Only show in_stock = true)
+                const { data: flavors, error: flavorError } = await supabaseClient
+                    .from('flavors')
+                    .select('*')
+                    .eq('in_stock', true)
+                    .order('name', { ascending: true });
 
-            if (flavorError) console.error('Error loading flavors:', flavorError);
-            else renderSingleFlavors(flavors || []);
+                if (flavorError) console.error('Error loading flavors:', flavorError);
+                else renderSingleFlavors(flavors || []);
 
-            // Fetch Flavor Combos
-            const { data: combos, error: comboError } = await supabaseClient
-                .from('flavor_combos')
-                .select('*')
-                .order('name', { ascending: true });
+                // Fetch Flavor Combos (Only show in_stock = true)
+                const { data: combos, error: comboError } = await supabaseClient
+                    .from('flavor_combos')
+                    .select('*')
+                    .eq('in_stock', true)
+                    .order('name', { ascending: true });
 
-            if (comboError) console.error('Error loading combos:', comboError);
-            else renderCombos(combos || []);
+                if (comboError) console.error('Error loading combos:', comboError);
+                else renderCombos(combos || []);
+            } catch (err) {
+                console.error('Fetch error:', err);
+            }
         }
 
         function renderSingleFlavors(flavors) {
             const grid = document.getElementById('single-flavors-grid');
             if (flavors.length === 0) {
-                grid.innerHTML = '<p>No single flavors available.</p>';
+                grid.innerHTML = '<p style="color: var(--text-muted);">No single flavors currently available.</p>';
                 return;
             }
 
             grid.innerHTML = flavors.map(item => `
-                <div class="card ${item.in_stock ? '' : 'out-of-stock'}">
-                    <div>
-                        <h3 class="item-name">${escapeHtml(item.name)}</h3>
-                    </div>
-                    <div>
-                        <span class="badge ${item.in_stock ? 'badge-in-stock' : 'badge-out-of-stock'}">
-                            ${item.in_stock ? 'Available' : 'Sold Out'}
-                        </span>
-                    </div>
+                <div class="card">
+                    <h3 class="item-name">${escapeHtml(item.name)}</h3>
                 </div>
             `).join('');
         }
@@ -196,29 +148,20 @@
         function renderCombos(combos) {
             const grid = document.getElementById('combos-grid');
             if (combos.length === 0) {
-                grid.innerHTML = '<p>No flavor combinations available.</p>';
+                grid.innerHTML = '<p style="color: var(--text-muted);">No flavor combinations currently available.</p>';
                 return;
             }
 
-            grid.innerHTML = combos.map(item => {
-                const ingredients = Array.isArray(item.flavors) ? item.flavors.join(' + ') : (item.ingredients || '');
-                return `
-                    <div class="card ${item.in_stock ? '' : 'out-of-stock'}">
-                        <div>
-                            <h3 class="item-name">${escapeHtml(item.name)}</h3>
-                            ${ingredients ? `<div class="combo-ingredients">${escapeHtml(ingredients)}</div>` : ''}
-                        </div>
-                        <div>
-                            <span class="badge ${item.in_stock ? 'badge-in-stock' : 'badge-out-of-stock'}">
-                                ${item.in_stock ? 'Available' : 'Sold Out'}
-                            </span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            grid.innerHTML = combos.map(item => `
+                <div class="card">
+                    <h3 class="item-name">${escapeHtml(item.name)}</h3>
+                    ${item.ingredients ? `<div class="combo-ingredients">${escapeHtml(item.ingredients)}</div>` : ''}
+                </div>
+            `).join('');
         }
 
         function escapeHtml(str) {
+            if (!str) return '';
             return str.replace(/[&<>'"]/g, 
                 tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
             );
