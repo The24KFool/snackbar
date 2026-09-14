@@ -3,17 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snow Cone Menu</title>
+    <title>Snowcone Menu</title>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
+            --primary: #0284c7;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --border-muted: #cbd5e1;
+            --out-bg: #f8fafc;
+            --pill-bg: #fef2f2;
+            --pill-border: #fca5a5;
+            --pill-text: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -21,64 +31,116 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 2rem;
+            padding: 1.5rem;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.75rem;
         }
 
         .header h1 {
-            font-size: 3rem;
-            color: var(--accent);
-            margin: 0 0 0.5rem 0;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            margin: 0;
+            font-size: 2.25rem;
+            color: var(--primary);
+            letter-spacing: 0.02em;
         }
 
-        .menu-section {
-            max-width: 1200px;
-            margin: 0 auto 3rem auto;
-        }
-
-        .section-title {
-            font-size: 1.75rem;
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .grid {
+        .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 1.25rem;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .card {
+        .menu-column {
             background: var(--card-bg);
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 1.25rem;
-            border: 1px solid #334155;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        .item-name {
+        .column-title {
             font-size: 1.35rem;
             font-weight: 700;
-            margin: 0;
-            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .combo-ingredients {
-            font-size: 0.95rem;
+        /* Compact Flavor Row Layout */
+        .flavor-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.65rem 0.85rem;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .flavor-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .flavor-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .flavor-name {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .flavor-desc {
+            font-size: 0.85rem;
             color: var(--text-muted);
-            margin-top: 0.5rem;
+        }
+
+        /* Compact Out-of-Stock Treatment */
+        .flavor-card.out-of-stock {
+            opacity: 0.5;
+            background-color: var(--out-bg);
+            border-color: var(--border-muted);
+        }
+
+        .flavor-card.out-of-stock .flavor-name {
+            color: var(--text-muted);
+        }
+
+        /* Minimalist Inline Status Pill */
+        .sold-out-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--pill-text);
+            background-color: var(--pill-bg);
+            border: 1px solid var(--pill-border);
+            padding: 2px 7px;
+            border-radius: 4px;
+            white-space: nowrap;
+            margin-left: 0.5rem;
+        }
+
+        .loading-text {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 0.95rem;
         }
     </style>
 </head>
@@ -88,111 +150,125 @@
         <h1>🍧 Shaved Ice Menu</h1>
     </div>
 
-    <!-- Single Flavors Section -->
-    <div class="menu-section">
-        <h2 class="section-title">Single Flavors</h2>
-        <div id="single-flavors-grid" class="grid">
-            <p style="color: var(--text-muted);">Loading single flavors...</p>
+    <div class="menu-grid">
+        <!-- Single Flavors Column -->
+        <div class="menu-column">
+            <h2 class="column-title">Single Flavors</h2>
+            <div id="single-flavors-container">
+                <span class="loading-text">Loading flavors...</span>
+            </div>
         </div>
-    </div>
 
-    <!-- Flavor Combinations Section -->
-    <div class="menu-section">
-        <h2 class="section-title">Flavor Combinations</h2>
-        <div id="combos-grid" class="grid">
-            <p style="color: var(--text-muted);">Loading flavor combinations...</p>
+        <!-- Flavor Combinations Column -->
+        <div class="menu-column">
+            <h2 class="column-title">Popular Combos</h2>
+            <div id="combo-flavors-container">
+                <span class="loading-text">Loading combinations...</span>
+            </div>
         </div>
     </div>
 
     <script>
+        let flavorsData = [];
+        let combosData = [];
+
         async function fetchMenuData() {
-            try {
-                // 1. Fetch available single flavors
-                const { data: flavors, error: flavorError } = await supabaseClient
-                    .from('flavors')
-                    .select('*')
-                    .eq('in_stock', true)
-                    .order('name', { ascending: true });
+            // Fetch single flavors
+            const { data: flavors, error: flavorsErr } = await supabaseClient
+                .from('flavors')
+                .select('*')
+                .order('name', { ascending: true });
 
-                if (flavorError) {
-                    console.error('Error loading flavors:', flavorError);
-                    return;
-                }
-
-                renderSingleFlavors(flavors || []);
-
-                // Build lookup Map and Set for ID normalization and stock checks
-                const flavorMap = new Map((flavors || []).map(f => [f.id.toLowerCase(), f.name]));
-                const inStockIds = new Set((flavors || []).map(f => f.id.toLowerCase()));
-
-                // 2. Fetch all flavor combos
-                const { data: combos, error: comboError } = await supabaseClient
-                    .from('flavor_combos')
-                    .select('*')
-                    .order('name', { ascending: true });
-
-                if (comboError) {
-                    console.error('Error loading combos:', comboError);
-                    return;
-                }
-
-                // 3. Dynamically filter combos where ALL ingredients are in stock
-                const availableCombos = (combos || []).filter(combo => {
-                    let ingredients = combo.ingredients;
-                    if (typeof ingredients === 'string') {
-                        try { ingredients = JSON.parse(ingredients); } catch (e) { ingredients = []; }
-                    }
-                    if (!Array.isArray(ingredients) || ingredients.length === 0) return false;
-
-                    return ingredients.every(flavorId => inStockIds.has(String(flavorId).toLowerCase()));
-                });
-
-                renderCombos(availableCombos, flavorMap);
-
-            } catch (err) {
-                console.error('Fetch error:', err);
+            if (!flavorsErr && flavors) {
+                flavorsData = flavors;
             }
+
+            // Fetch flavor combos
+            const { data: combos, error: combosErr } = await supabaseClient
+                .from('flavor_combos')
+                .select('*')
+                .order('name', { ascending: true });
+
+            if (!combosErr && combos) {
+                combosData = combos;
+            }
+
+            renderMenu();
         }
 
-        function renderSingleFlavors(flavors) {
-            const grid = document.getElementById('single-flavors-grid');
-            if (flavors.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-muted);">No single flavors currently available.</p>';
+        function renderMenu() {
+            renderSingleFlavors();
+            renderComboFlavors();
+        }
+
+        function renderSingleFlavors() {
+            const container = document.getElementById('single-flavors-container');
+            if (!flavorsData || flavorsData.length === 0) {
+                container.innerHTML = '<p class="loading-text">No single flavors available.</p>';
                 return;
             }
 
-            grid.innerHTML = flavors.map(item => `
-                <div class="card">
-                    <h3 class="item-name">${escapeHtml(item.name)}</h3>
-                </div>
-            `).join('');
-        }
-
-        function renderCombos(combos, flavorMap) {
-            const grid = document.getElementById('combos-grid');
-            if (combos.length === 0) {
-                grid.innerHTML = '<p style="color: var(--text-muted);">No flavor combinations currently available.</p>';
-                return;
-            }
-
-            grid.innerHTML = combos.map(item => {
-                let ingredients = item.ingredients;
-                if (typeof ingredients === 'string') {
-                    try { ingredients = JSON.parse(ingredients); } catch (e) { ingredients = []; }
-                }
-
-                // Format ingredient names nicely
-                const formattedList = Array.isArray(ingredients) 
-                    ? ingredients.map(id => flavorMap.get(String(id).toLowerCase()) || id).join(' + ')
-                    : '';
-
+            container.innerHTML = flavorsData.map(flavor => {
+                const isInStock = flavor.in_stock;
                 return `
-                    <div class="card">
-                        <h3 class="item-name">${escapeHtml(item.name)}</h3>
-                        ${formattedList ? `<div class="combo-ingredients">${escapeHtml(formattedList)}</div>` : ''}
+                    <div class="flavor-card ${!isInStock ? 'out-of-stock' : ''}">
+                        <div class="flavor-info">
+                            <span class="flavor-name">${escapeHtml(flavor.name)}</span>
+                        </div>
+                        ${!isInStock ? '<span class="sold-out-pill">OUT OF STOCK</span>' : ''}
                     </div>
                 `;
             }).join('');
+        }
+
+        function renderComboFlavors() {
+            const container = document.getElementById('combo-flavors-container');
+            if (!combosData || combosData.length === 0) {
+                container.innerHTML = '<p class="loading-text">No combinations available.</p>';
+                return;
+            }
+
+            // Map flavor stock status for quick lookup if combo availability depends on single flavors
+            const stockMap = new Map(flavorsData.map(f => [f.id, f.in_stock]));
+
+            container.innerHTML = combosData.map(combo => {
+                // If combo has explicit in_stock column OR relies on ingredient IDs
+                let isInStock = combo.in_stock !== undefined ? combo.in_stock : true;
+
+                // Optional: Check if any referenced flavor component is out of stock
+                if (Array.isArray(combo.flavor_ids) && combo.flavor_ids.length > 0) {
+                    const allComponentsAvailable = combo.flavor_ids.every(id => stockMap.get(id) !== false);
+                    isInStock = isInStock && allComponentsAvailable;
+                }
+
+                return `
+                    <div class="flavor-card ${!isInStock ? 'out-of-stock' : ''}">
+                        <div class="flavor-info">
+                            <span class="flavor-name">${escapeHtml(combo.name)}</span>
+                            ${combo.description ? `<span class="flavor-desc">${escapeHtml(combo.description)}</span>` : ''}
+                        </div>
+                        ${!isInStock ? '<span class="sold-out-pill">OUT OF STOCK</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupRealtimeSubscriptions() {
+            // Subscribe to live updates from the flavors table
+            supabaseClient
+                .channel('public:flavors')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'flavors' }, () => {
+                    fetchMenuData();
+                })
+                .subscribe();
+
+            // Subscribe to live updates from the flavor_combos table
+            supabaseClient
+                .channel('public:flavor_combos')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'flavor_combos' }, () => {
+                    fetchMenuData();
+                })
+                .subscribe();
         }
 
         function escapeHtml(str) {
@@ -202,15 +278,11 @@
             );
         }
 
-        // Initial Load
-        fetchMenuData();
-
-        // Subscribe to Realtime WebSocket Updates on flavors
-        supabaseClient
-            .channel('public-menu-changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'flavors' }, () => fetchMenuData())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'flavor_combos' }, () => fetchMenuData())
-            .subscribe();
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMenuData();
+            setupRealtimeSubscriptions();
+        });
     </script>
 </body>
 </html>
