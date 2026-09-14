@@ -9,17 +9,15 @@
     <script src="config.js"></script>
     <style>
         :root {
-            --primary: #0284c7;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --border-muted: #cbd5e1;
-            --out-bg: #f8fafc;
-            --pill-bg: #fef2f2;
-            --pill-border: #fca5a5;
-            --pill-text: #ef4444;
+            --bg-color: #0b1329;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --accent-cyan: #38bdf8;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --pill-bg: #450a0a;
+            --pill-border: #991b1b;
+            --pill-text: #fca5a5;
         }
 
         * {
@@ -31,140 +29,128 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 1.5rem;
+            padding: 2rem;
             -webkit-user-select: none;
             user-select: none;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
-            border-bottom: 3px solid var(--primary);
-            padding-bottom: 0.75rem;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 2.25rem;
-            color: var(--primary);
-            letter-spacing: 0.02em;
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
+        .section-container {
             max-width: 1200px;
-            margin: 0 auto;
+            margin: 0 auto 2.5rem auto;
         }
 
-        .menu-column {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .column-title {
-            font-size: 1.35rem;
-            font-weight: 700;
-            margin-top: 0;
-            margin-bottom: 1rem;
-            color: var(--primary);
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 0.5rem;
-            text-transform: uppercase;
+        .section-title {
+            color: var(--accent-cyan);
+            font-size: 1.5rem;
+            font-weight: 800;
             letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-cyan);
         }
 
-        /* Compact Flavor Row Layout */
+        /* 3-Column Grid Layout */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Dark Card Styling */
         .flavor-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.65rem 0.85rem;
-            background: #ffffff;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
-            transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-        }
-
-        .flavor-card:last-child {
-            margin-bottom: 0;
+            min-height: 64px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.2s ease, filter 0.2s ease;
         }
 
         .flavor-info {
             display: flex;
             flex-direction: column;
-            gap: 0.15rem;
+            gap: 0.25rem;
         }
 
         .flavor-name {
             font-size: 1.15rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-main);
+            line-height: 1.2;
         }
 
-        .flavor-desc {
+        .combo-ingredients {
             font-size: 0.85rem;
             color: var(--text-muted);
+            font-weight: 500;
         }
 
-        /* Compact Out-of-Stock Treatment */
+        /* Out of Stock Modifier */
         .flavor-card.out-of-stock {
-            opacity: 0.5;
-            background-color: var(--out-bg);
-            border-color: var(--border-muted);
+            opacity: 0.45;
+            filter: grayscale(30%);
+            border-color: #1e293b;
         }
 
-        .flavor-card.out-of-stock .flavor-name {
+        .flavor-card.out-of-stock .flavor-name,
+        .flavor-card.out-of-stock .combo-ingredients {
             color: var(--text-muted);
         }
 
-        /* Minimalist Inline Status Pill */
+        /* Minimalist Out-of-Stock Pill */
         .sold-out-pill {
-            font-size: 0.7rem;
-            font-weight: 700;
+            font-size: 0.65rem;
+            font-weight: 800;
             letter-spacing: 0.05em;
             color: var(--pill-text);
             background-color: var(--pill-bg);
             border: 1px solid var(--pill-border);
-            padding: 2px 7px;
+            padding: 3px 6px;
             border-radius: 4px;
             white-space: nowrap;
             margin-left: 0.5rem;
+            text-transform: uppercase;
         }
 
         .loading-text {
             color: var(--text-muted);
             font-style: italic;
-            font-size: 0.95rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🍧 Shaved Ice Menu</h1>
+    <!-- Single Flavors Section -->
+    <div class="section-container">
+        <h2 class="section-title">Single Flavors</h2>
+        <div id="single-flavors-grid" class="card-grid">
+            <span class="loading-text">Loading single flavors...</span>
+        </div>
     </div>
 
-    <div class="menu-grid">
-        <!-- Single Flavors Column -->
-        <div class="menu-column">
-            <h2 class="column-title">Single Flavors</h2>
-            <div id="single-flavors-container">
-                <span class="loading-text">Loading flavors...</span>
-            </div>
-        </div>
-
-        <!-- Flavor Combinations Column -->
-        <div class="menu-column">
-            <h2 class="column-title">Popular Combos</h2>
-            <div id="combo-flavors-container">
-                <span class="loading-text">Loading combinations...</span>
-            </div>
+    <!-- Flavor Combinations Section -->
+    <div class="section-container">
+        <h2 class="section-title">Flavor Combinations</h2>
+        <div id="combo-flavors-grid" class="card-grid">
+            <span class="loading-text">Loading combinations...</span>
         </div>
     </div>
 
@@ -202,9 +188,9 @@
         }
 
         function renderSingleFlavors() {
-            const container = document.getElementById('single-flavors-container');
+            const container = document.getElementById('single-flavors-grid');
             if (!flavorsData || flavorsData.length === 0) {
-                container.innerHTML = '<p class="loading-text">No single flavors available.</p>';
+                container.innerHTML = '<span class="loading-text">No single flavors available.</span>';
                 return;
             }
 
@@ -222,30 +208,46 @@
         }
 
         function renderComboFlavors() {
-            const container = document.getElementById('combo-flavors-container');
+            const container = document.getElementById('combo-flavors-grid');
             if (!combosData || combosData.length === 0) {
-                container.innerHTML = '<p class="loading-text">No combinations available.</p>';
+                container.innerHTML = '<span class="loading-text">No combinations available.</span>';
                 return;
             }
 
-            // Map flavor stock status for quick lookup if combo availability depends on single flavors
+            // Maps for fast stock status and name checks
             const stockMap = new Map(flavorsData.map(f => [f.id, f.in_stock]));
+            const nameMap = new Map(flavorsData.map(f => [f.id, f.name]));
 
             container.innerHTML = combosData.map(combo => {
-                // If combo has explicit in_stock column OR relies on ingredient IDs
                 let isInStock = combo.in_stock !== undefined ? combo.in_stock : true;
+                let ingredientsList = [];
 
-                // Optional: Check if any referenced flavor component is out of stock
-                if (Array.isArray(combo.flavor_ids) && combo.flavor_ids.length > 0) {
-                    const allComponentsAvailable = combo.flavor_ids.every(id => stockMap.get(id) !== false);
-                    isInStock = isInStock && allComponentsAvailable;
+                // Check flavor stock and build ingredient name list
+                if (Array.isArray(combo.ingredients) && combo.ingredients.length > 0) {
+                    const allComponentsInStock = combo.ingredients.every(id => stockMap.get(id) !== false);
+                    isInStock = isInStock && allComponentsInStock;
+
+                    ingredientsList = combo.ingredients
+                        .map(id => nameMap.get(id))
+                        .filter(Boolean);
+                } else if (Array.isArray(combo.flavor_ids) && combo.flavor_ids.length > 0) {
+                    const allComponentsInStock = combo.flavor_ids.every(id => stockMap.get(id) !== false);
+                    isInStock = isInStock && allComponentsInStock;
+
+                    ingredientsList = combo.flavor_ids
+                        .map(id => nameMap.get(id))
+                        .filter(Boolean);
+                } else if (combo.description) {
+                    ingredientsList = [combo.description];
                 }
+
+                const ingredientsText = ingredientsList.join(' + ');
 
                 return `
                     <div class="flavor-card ${!isInStock ? 'out-of-stock' : ''}">
                         <div class="flavor-info">
                             <span class="flavor-name">${escapeHtml(combo.name)}</span>
-                            ${combo.description ? `<span class="flavor-desc">${escapeHtml(combo.description)}</span>` : ''}
+                            ${ingredientsText ? `<span class="combo-ingredients">${escapeHtml(ingredientsText)}</span>` : ''}
                         </div>
                         ${!isInStock ? '<span class="sold-out-pill">OUT OF STOCK</span>' : ''}
                     </div>
@@ -254,7 +256,6 @@
         }
 
         function setupRealtimeSubscriptions() {
-            // Subscribe to live updates from the flavors table
             supabaseClient
                 .channel('public:flavors')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'flavors' }, () => {
@@ -262,7 +263,6 @@
                 })
                 .subscribe();
 
-            // Subscribe to live updates from the flavor_combos table
             supabaseClient
                 .channel('public:flavor_combos')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'flavor_combos' }, () => {
@@ -278,7 +278,6 @@
             );
         }
 
-        // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
             fetchMenuData();
             setupRealtimeSubscriptions();
