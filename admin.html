@@ -212,16 +212,30 @@
     <script>
         let currentPin = null;
 
-        function authenticatePin() {
+        async function authenticatePin() {
             const input = document.getElementById('pin-input').value;
             if (!input) return;
 
+            // 1. Verify PIN against Supabase before revealing the dashboard
+            const { data, error: pinError } = await supabaseClient.rpc('verify_pin', { input_pin: input });
+
+            if (pinError) {
+                alert('Invalid PIN. Access Denied.');
+                document.getElementById('pin-input').value = '';
+                currentPin = null;
+                sessionStorage.removeItem('staff_pin');
+                return;
+            }
+
+            // 2. PIN is valid; set state and storage
             currentPin = input;
             sessionStorage.setItem('staff_pin', currentPin);
 
+            // 3. Show Dashboard UI
             document.getElementById('auth-overlay').classList.add('hidden');
             document.getElementById('admin-dashboard').classList.remove('hidden');
 
+            // 4. Fetch and show inventory
             loadAdminData();
         }
 
