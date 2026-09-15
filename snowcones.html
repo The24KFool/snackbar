@@ -38,30 +38,82 @@
             user-select: none;
         }
 
-        /* Full Screen Split Viewport */
+        /* App Outer Layout */
         .app-viewport {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* Side-by-side split for maximum vertical scale */
-            gap: 2rem;
+            display: flex;
+            flex-direction: column;
             height: 100vh;
-            padding: 2rem;
+            padding: 1.25rem 2rem 1.75rem 2rem;
+            gap: 0.75rem;
+        }
+
+        /* Centered Header Banner with Sponsor Lockup */
+        .main-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            gap: 0.25rem;
+        }
+
+        .main-title {
+            font-size: 3.5rem; /* Scaled up for 8-10 ft visibility */
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-main);
+            margin: 0;
+            line-height: 0.95;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .sponsor-lockup {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-top: 0.15rem;
+        }
+
+        .sponsor-subtitle {
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .sponsor-logo {
+            max-height: 48px; /* Strict height limit to preserve vertical screen real estate */
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Main Content Split Viewport */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Side-by-side split */
+            gap: 2rem;
+            flex: 1;
+            min-height: 0; /* Critical for container height constraining */
         }
 
         .section-container {
             display: flex;
             flex-direction: column;
-            min-height: 0; /* Prevents container from overflowing screen */
+            min-height: 0;
         }
 
         /* Scaled Header for Distance */
         .section-title {
             color: var(--accent-cyan);
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 800;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            margin: 0 0 1rem 0;
-            padding-bottom: 0.5rem;
+            margin: 0 0 0.75rem 0;
+            padding-bottom: 0.35rem;
             border-bottom: 3px solid var(--accent-cyan);
             flex-shrink: 0;
         }
@@ -71,7 +123,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             grid-auto-rows: max-content;
-            gap: 0.85rem;
+            gap: 0.75rem;
             align-content: start;
             overflow: hidden;
         }
@@ -81,11 +133,11 @@
             background-color: var(--card-bg);
             border: 2px solid var(--card-border);
             border-radius: 10px;
-            padding: 0.85rem 1.25rem;
+            padding: 0.7rem 1.1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            min-height: 64px;
+            min-height: 58px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             transition: opacity 0.2s ease, filter 0.2s ease;
         }
@@ -93,13 +145,13 @@
         .flavor-info {
             display: flex;
             flex-direction: column;
-            gap: 0.2rem;
+            gap: 0.15rem;
             min-width: 0;
         }
 
         /* Large Bold Text for Distance */
         .flavor-name {
-            font-size: 1.35rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--text-main);
             line-height: 1.2;
@@ -109,7 +161,7 @@
         }
 
         .combo-ingredients {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
             font-weight: 600;
             white-space: nowrap;
@@ -131,7 +183,7 @@
 
         /* High-Contrast Pill for Distance */
         .sold-out-pill {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 800;
             letter-spacing: 0.05em;
             color: var(--pill-text);
@@ -155,19 +207,31 @@
 <body>
 
     <div class="app-viewport">
-        <!-- Single Flavors Section (Left Half) -->
-        <div class="section-container">
-            <h2 class="section-title">Single Flavors</h2>
-            <div id="single-flavors-grid" class="card-grid">
-                <span class="loading-text">Loading single flavors...</span>
+        <!-- Header with Title and Logo -->
+        <header class="main-header">
+            <h1 class="main-title">SHAVED ICE</h1>
+            <div class="sponsor-lockup">
+                <span class="sponsor-subtitle">brought to you by</span>
+                <img src="logo.png" alt="Company Logo" class="sponsor-logo">
             </div>
-        </div>
+        </header>
 
-        <!-- Flavor Combinations Section (Right Half) -->
-        <div class="section-container">
-            <h2 class="section-title">Flavor Combinations</h2>
-            <div id="combo-flavors-grid" class="card-grid">
-                <span class="loading-text">Loading combinations...</span>
+        <!-- Menu Split Container -->
+        <div class="content-grid">
+            <!-- Single Flavors Section (Left Half) -->
+            <div class="section-container">
+                <h2 class="section-title">Single Flavors</h2>
+                <div id="single-flavors-grid" class="card-grid">
+                    <span class="loading-text">Loading single flavors...</span>
+                </div>
+            </div>
+
+            <!-- Flavor Combinations Section (Right Half) -->
+            <div class="section-container">
+                <h2 class="section-title">Flavor Combinations</h2>
+                <div id="combo-flavors-grid" class="card-grid">
+                    <span class="loading-text">Loading combinations...</span>
+                </div>
             </div>
         </div>
     </div>
